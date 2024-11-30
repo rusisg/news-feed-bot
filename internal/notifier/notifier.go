@@ -6,7 +6,9 @@ import (
 	"github.com/go-shiori/go-readability"
 	"io"
 	"net/http"
+	"news_feed_bot/internal/botkit/markup"
 	"news_feed_bot/internal/model"
+	"regexp"
 	"strings"
 	"time"
 
@@ -46,6 +48,26 @@ func New(
 		sendInterval:     sendInterval,
 		lookupTimeWindow: lookupTimeWindow,
 		channelID:        channelID,
+	}
+}
+
+func (n *Notifier) Start(ctx context.Context) error {
+	ticker := time.NewTicker(n.sendInterval)
+	defer ticker.Stop()
+
+	if err := n.SelectAndSendArticle(ctx); err != nil {
+		return err
+	}
+
+	for {
+		select {
+		case <-ticker.C:
+			if err := n.SelectAndSendArticle(ctx); err != nil {
+				return err
+			}
+		case <-ctx.Done():
+			return ctx.Err()
+		}
 	}
 }
 
@@ -96,9 +118,35 @@ func (n *Notifier) extractSummary(ctx context.Context, article model.Article) (s
 		return "", err
 	}
 
-	summary, err := n.summarizer.Summarize(ctx, doc.TextContent)
+	summary, err := n.summarizer.Summarize(ctx, n.cleanText(doc.TextContent))
+	if err != nil {
+		return "", err
+	}
 
 	return "\n\n" + summary, nil
 }
 
-func (n *Notifier) sendArticle(article model.Article, summary string) error {}
+var redundantNewLines = regexp.MustCompile(`\n{3,}`)
+
+func (n *Notifier) cleanText(text string) string {
+	return redundantNewLines.ReplaceAllString(text, "\n")
+}
+
+func (n *Notifier) sendArticle(article model.Article, summary string) error {
+	const msgFormat = "*%s*%s\n\n%s"
+
+	msg := tgbotapi.NewMessage(n.channelID,
+		fmt.Sprintf(
+			markup.EscapeForMarkdown(msgFormat),
+			markup.EscapeForMarkdown(article.Title),
+			markup.EscapeForMarkdown(summary),
+			markup.EscapeForMarkdown(article.Link),
+		))
+	msg.ParseMode = tgbotapi.ModeMarkdownV2
+
+	_, err := n.bot.Send(msg)
+	if err != nil {
+		return err
+	}
+	return nil
+}
