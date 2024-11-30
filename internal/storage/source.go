@@ -9,7 +9,13 @@ import (
 )
 
 type SourcePostgresStorage struct {
-	db sqlx.DB
+	db *sqlx.DB
+}
+
+func NewSourceStorage(db *sqlx.DB) *SourcePostgresStorage {
+	return &SourcePostgresStorage{
+		db: db,
+	}
 }
 
 func (s *SourcePostgresStorage) Sources(ctx context.Context) ([]model.Source, error) {
