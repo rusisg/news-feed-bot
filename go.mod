@@ -21,6 +21,7 @@ require (
 	github.com/gogs/chardet v0.0.0-20211120154057-b7413eaefb8f // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/sashabaranov/go-openai v1.36.0 // indirect
 	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 )
