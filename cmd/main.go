@@ -6,6 +6,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
 	"log"
+	"news_feed_bot/internal/bot"
+	"news_feed_bot/internal/botkit"
 	"news_feed_bot/internal/config"
 	fetcher "news_feed_bot/internal/fetcher"
 	"news_feed_bot/internal/notifier"
@@ -51,6 +53,8 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
+	newsBot := botkit.New(botAPI)
+	newsBot.RegisterCmdView("start", bot.ViewCmdStart())
 	go func(ctx context.Context) {
 		if err := fetcher.Start(ctx); err != nil {
 			if !errors.Is(err, context.Canceled) {
@@ -61,13 +65,22 @@ func main() {
 		log.Println("fetcher stopped")
 	}(ctx)
 
-	//go func(ctx context.Context) {
-	if err := notifier.Start(ctx); err != nil {
+	go func(ctx context.Context) {
+		if err := notifier.Start(ctx); err != nil {
+			if !errors.Is(err, context.Canceled) {
+				log.Printf("[ERROR] Failed to start notifier: %v", err)
+				return
+			}
+		}
+		log.Println("notifier stopped")
+	}(ctx)
+
+	if err := newsBot.Run(ctx); err != nil {
 		if !errors.Is(err, context.Canceled) {
-			log.Printf("[ERROR] Failed to start notifier: %v", err)
+			log.Printf("[ERROR] Failed to run bot: %v", err)
 			return
 		}
+
+		log.Println("bot stopped")
 	}
-	log.Println("notifier stopped")
-	//}(ctx)
 }
