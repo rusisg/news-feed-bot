@@ -1,2 +1,4 @@
 .idea
 .env
+./main
+/config.local.hcl
