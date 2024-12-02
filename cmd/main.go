@@ -4,6 +4,7 @@ import (
 	"errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"golang.org/x/net/context"
 	"log"
 	"news_feed_bot/internal/bot"
@@ -43,7 +44,7 @@ func main() {
 		)
 		notifier = notifier.New(
 			articleStorage,
-			summary.NewOpenAISummarizer(config.Get().OpenAiKey, config.Get().OpenAiPrompt),
+			summary.NewOpenAISummarizer(config.Get().OpenAIKey, config.Get().OpenAIPrompt),
 			botAPI,
 			config.Get().NotificationInterval,
 			2*config.Get().FetchInterval,
