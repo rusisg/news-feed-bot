@@ -9,6 +9,7 @@ require (
 	github.com/go-shiori/go-readability v0.0.0-20241012063810-92284fa8a71f
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/jmoiron/sqlx v1.4.0
+	github.com/lib/pq v1.10.9
 	github.com/samber/lo v1.47.0
 	github.com/sashabaranov/go-openai v1.36.0
 	go.tomakado.io/containers v0.0.0-20240306123358-5f64d4e0f4f3
