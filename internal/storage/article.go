@@ -25,14 +25,15 @@ func (s *ArticlePostgresStorage) Store(ctx context.Context, article model.Articl
 	defer conn.Close()
 
 	if _, err := conn.ExecContext(ctx,
-		`INSERT INTO articles (source_id, title, link, summary, published_at)
-		VALUES ($1, $2, $3, $4, $5)
-		ON CONFLICT DO NOTHING `,
+		`INSERT INTO articles (source_id, title, link, summary, published_at, posted_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT DO NOTHING`,
 		article.SourceID,
 		article.Title,
 		article.Link,
 		article.Summary,
 		article.PublishedAt,
+		time.Time{}, // Set a default value for posted_at (e.g., empty time)
 	); err != nil {
 		return err
 	}
