@@ -93,4 +93,5 @@ type dbSource struct {
 	Name      string    `db:"name"`
 	FeedURL   string    `db:"feed_url"`
 	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
